@@ -2,15 +2,16 @@ import http.client, urllib.parse
 import json
 import os
 
-import spotify_oauth_token
+from spotify_oauth_token import access_token
 
 uri = 'api.spotify.com'
 header = {
-    'Authorization': 'Bearer {}'.format(spotify_oauth_token.access_token),
+    'Authorization': 'Bearer {}'.format(access_token),
     'Content-Length': 0
 }
 
 folder = 'artist_list'
+folder_not_found = 'not_found'
 
 artist_list = os.listdir(folder)
 print(artist_list)
@@ -53,6 +54,8 @@ for filename_list in artist_list:
             not_found_artist.append(artist)
             continue
         match_artist = data['artists']['items'][0]
+        if match_artist['name'].lower() != artist.lower():
+            print(match_artist['name'], artist, 'not quite match')
         batch_artist_id_follow.append(match_artist['id'])
 
         # follow the artist
@@ -60,6 +63,5 @@ for filename_list in artist_list:
             follow(batch_artist_id_follow)
             batch_artist_id_follow = []
     follow(batch_artist_id_follow)
-    break
-with open(os.path.join(folder, 'not_found_artist.txt'), 'w') as f:
+with open(os.path.join(folder_not_found, 'not_found_artist.txt'), 'w') as f:
     json.dump(not_found_artist, f, ensure_ascii=False)
